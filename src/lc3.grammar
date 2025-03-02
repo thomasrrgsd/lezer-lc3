@@ -1,0 +1,56 @@
+@top LC3Text { Seperator | Comment | String | Directive | OsCall | OpCode | Register | Label | Number }
+
+//@top LC3Text { statement+ }
+Register { 
+  @specialize<
+    Label,
+    "r0" | "r1" | "r2" | "r3" | "r4" | "r5" | "r6" | "r7" | "R0" | "R1" | "R2" | "R3" | "R4" | "R5" | "R6" | "R7"
+  >
+}
+OsCall { 
+  @specialize<
+    Label,
+    "GETC" | "OUT" | "PUTS" | "IN" | "PUTSP" | "HALT"
+  >
+}
+OpCode { 
+  @specialize<
+    Label,
+    "ADD" | "AND" | "JMP" | "RET" | "JSR" | "JSRR" | "NOT" | "RTI" | "TRAP" |
+    "LD" | "LDI" | "LDR" | "LEA" | "ST" | "STI" | "STR" |
+    "BR" | "BRn" | "BRz" | "BRp" | "BRnz" | "BRnp" | "BRzp" | "BRnzp"
+  >
+}
+//statement { OpCode Register Seperator Label Comment?}
+@tokens {
+  //@precedence { Register, Number }
+
+  Comment   { ";" ![\n]* }
+  String { '"' char* '"' }
+  Directive { ".ORIG" | ".END" | ".FILL" | ".STRINGZ" | ".BLKW" | ".EXTERNAL" }
+  Label { $[a-zA-Z]$[a-zA-Z0-9_]* }
+  //OsCall { "GETC" | "OUT" | "PUTS" | "IN" | "PUTSP" | "HALT" }
+  
+  //OpCode { generic | loads | stores | branch }
+  //generic { "ADD" | "AND" | "JMP" | "RET" | "JSR" | "JSRR" | "NOT" | "RTI" | "TRAP" }
+  //loads  { "LD" | "LDI" | "LDR" | "LEA" }
+  //stores { "ST" | "STI" | "STR" }
+  //branch { "BR" $[nzp]* }
+  Seperator { $[,] }
+  //Register { $[rR]$[0-7] }
+
+  
+  Number { '-'? int  }
+  int  { '0' | $[1-9] @digit* }
+
+  char { $[\u{20}\u{21}\u{23}-\u{5b}\u{5d}-\u{10ffff}] | "\\" esc }
+  esc  { $["\\\/bfnrt] | "u" hex hex hex hex }
+  hex  { $[0-9a-fA-F] }
+
+  
+  whitespace { $[ \n\r\t] }
+}
+
+@skip { whitespace }
+
+@external propSource lc3Highlighting from "./highlight"
